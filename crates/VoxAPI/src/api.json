@@ -1,0 +1,11 @@
+{
+    "Node2D": {
+        "methods": [
+            "pub fn test(&self) -> i32{10}"
+        ],
+        "properties": [
+            "position: [f32;2],\n",
+            "rotation: f32"
+        ]
+    }
+}

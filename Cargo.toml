@@ -1,0 +1,22 @@
+[package]
+name = "Vox"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+VoxInternal = {path = "crates/VoxInternal"}
+
+[workspace]
+members = [
+    "crates/*"
+]
+
+[features]
+default = [
+    "vox_ecs"
+]
+vox_ecs = ["VoxInternal/VoxECS"]
+
+
