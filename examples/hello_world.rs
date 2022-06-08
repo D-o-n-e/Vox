@@ -1,4 +1,3 @@
-use resources::*;
 use Vox::*;
 
 #[derive(Debug)]
@@ -9,7 +8,7 @@ impl Script for Player{
     fn new() -> Self {
         Player
     }
-    fn start(&self, mut owner: Components){
+    fn start(&self, mut owner: &Components){
         println!("Hello World");  
     }
     
@@ -18,6 +17,6 @@ impl Script for Player{
 // Run ECS
 fn main(){
     let mut world = World::new();
-    world.add_component::<Player>(Components::Component2D{position:[0.,0.]});
+    world.add_component::<Player>(Component2D{position:[0.,0.], rotation:0.});
     world.start();
 }
