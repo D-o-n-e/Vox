@@ -10,7 +10,7 @@ impl Script for Player{
         Player
     }
     fn start(&self, mut owner: Components){
-        println!("Player1");  
+        println!("Hello World");  
     }
     
 }
