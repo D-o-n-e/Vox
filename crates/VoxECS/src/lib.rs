@@ -1,35 +1,79 @@
 
-#[derive(Debug)]
-pub struct Component2D{
-    pub position: [f32; 2],
-    pub rotation: f32
-}
-pub trait Component{
-    fn new(position: [f32;2], rotation: f32) -> Self;
+pub trait Script{
+    fn new() -> Self where Self: Sized;
+    fn start(&self, owner: Components){}
+    fn update(&self){}
+    fn resources(&self, resources: &Vec<i32>){}
 }
 
-impl Component for Component2D{
-    fn new(position: [f32;2], rotation: f32) -> Self{
-        Self{position: position, rotation: rotation}
+#[derive(Debug, Copy, Clone)]
+pub enum Components{
+    Component2D{
+        position: [f32;2]
     }
 }
-// pub struct Engine();
 
-// impl Engine{
-//     pub fn start(self){
-
-//     }
-// }
-
-pub fn start<C, T>(component: T)
-where
-    C: Script<T>
-{
-    C::new().start(component);
+impl Components{
+    pub fn get_position(self) -> [f32;2]{
+        match self{
+            Components::Component2D{position} => position,
+            _ => {panic!("Error")}
+        }
+    }
+    pub fn set_position(&mut self, pos: [f32;2]){
+        match self{
+            Components::Component2D{position} => *position = pos,
+            _ => {panic!("Error")}
+        }
+    }
 }
 
-pub trait Script<T>{
-    fn new() -> Self;
-    fn start(&self, owner: T){}
-    fn update(&self){}
+trait ComponentVec {
+    fn push_none(&mut self);
+}
+
+impl<T> ComponentVec for Vec<Option<T>> {
+    fn push_none(&mut self) {
+        self.push(None)
+    }
+}
+
+pub struct World
+{
+    resources: Vec<i32>,
+    components: Vec<Components>,
+    classes: Vec<Box<dyn Script>>
+}
+
+impl World
+{
+    pub fn new() -> Self
+    {
+        Self{resources: vec![], components: vec![], classes: vec![]}
+    }
+    pub fn start(self)
+    {
+        for i in 0..self.classes.len(){
+            self.classes[i].start(self.components[i]);   
+        }
+        
+        // c.start(self.components[0].class);
+        loop{
+            for c in &self.classes{
+                c.resources(&(self.resources))
+            }
+        }
+    }
+    pub fn add_component<T>(&mut self, comp: Components)
+    where
+        T: Script + 'static
+    {
+        self.classes.append(&mut vec![Box::new(T::new())]);
+        self.components.append(&mut vec![comp]);
+        
+        //.start(Components::Component2D{position: [0.,0.]})
+    }
+    pub fn add_resource(&mut self, res: i32){
+        self.resources.append(&mut vec![res]);
+    }
 }

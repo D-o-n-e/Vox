@@ -1,26 +1,42 @@
+use resources::*;
 use Vox::*;
 
 #[derive(Debug)]
-pub struct Player;
+pub struct Player1{
+    time: i32
+}
+pub struct Player2;
 
 // Overidding methods
-impl Script<Component2D> for Player{
+impl Script for Player1{
     fn new() -> Self {
-        Player
+        Player1{time: 10}
     }
-    fn start(&self, owner: Component2D){
-        println!("Hello, World");  
+    fn start(&self, mut owner: Components){
+        println!("Player1");  
     }
+    
 }
 
-// Custom Methods
-impl Player{
-    fn add(&self, a: i32, b: i32) -> i32{
-        a + b
+// Beta Resources
+impl Script for Player2{
+    fn new() -> Self {
+        Player2
     }
+    fn start(&self, mut owner: Components){
+        println!("Player2");  
+    }
+    fn resources(&self, resources: &Vec<i32>) {
+        // Use Resources
+    }
+    
 }
 
-// All placeholders, this is ECS example
+// Run ECS
 fn main(){
-    start::<Player, Component2D>(Component2D::new([0.,0.], 1.));
+    let mut world = World::new();
+    world.add_resource(10);
+    world.add_component::<Player1>(Components::Component2D{position:[1.,0.]});
+    world.add_component::<Player2>(Components::Component2D{position:[10.,0.]});
+    world.start();
 }
