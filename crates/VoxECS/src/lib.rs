@@ -1,19 +1,27 @@
 use image::{io::Reader as ImageReader, DynamicImage};
-pub trait Script{
+use std::collections::HashMap;
+mod components;
+pub use components::*;
+
+pub trait Script: std::fmt::Debug{
     fn new() -> Self where Self: Sized;
-    fn start(&self, owner: &Components){}
+    fn start(&self, owner: &Components, world: &World){}
     fn update(&self){}
     fn resources(&self, resources: &Vec<i32>){}
 }
 
 #[derive(Debug)]
 pub enum Components{
-    Component2D{
-        position: [f32;2],
-        rotation: f32
-    },
-    Sprite2D{
-        image: DynamicImage
+    Component2D(Component2D),
+    Sprite2D(Sprite2D)
+}
+
+impl Components{
+    pub fn get_component2D(&self) -> Component2D{
+        match self{
+            Components::Component2D(data) => *data,
+            _ => {Component2D::new()}
+        }
     }
 }
 
@@ -23,31 +31,11 @@ pub enum Objects{
     }
 }
 
-impl Components{
-    pub fn get_position(self) -> [f32;2]{
-        match self{
-            Components::Component2D{position, rotation} => position,
-            _ => {panic!("Error")}
-        }
-    }
-    pub fn set_position(&mut self, pos: [f32;2]){
-        match self{
-            Components::Component2D{position, rotation} => *position = pos,
-            _ => {panic!("Error")}
-        }
-    }
-}
 
-pub struct World
-{
-    resources: Vec<i32>,
-    components: Vec<Components>,
-    classes: Vec<Box<dyn Script>>
-}
 
 pub fn instance(obj: Objects) -> Result<Components, &'static str>{
     match obj{
-        Objects::Texture { data } => Ok(Components::Sprite2D { image: data }),
+        Objects::Texture { data } => Ok(Components::Sprite2D(Sprite2D::new(data))),
         _ => Err("Cannot instance")
     }
 }
@@ -65,36 +53,43 @@ pub fn load(path: &str) -> Result<Objects, &str>{
     
 }
 
+pub struct World
+{
+    resources: Vec<i32>,
+    components: Vec<(Box<dyn Script>,Components)>, 
+}
+
 impl World
 {
     pub fn new() -> Self
     {
-        Self{resources: vec![], components: vec![], classes: vec![]}
+        Self{resources: vec![], components: vec![]}
     }
 
-    pub fn start(&self)
-    {
-        for i in 0..self.classes.len(){
-            self.classes[i].start(&self.components[i]);   
-        }
-        
-        // c.start(self.components[0].class);
-        loop{
-            for c in &self.classes{
-                c.resources(&(self.resources))
-            }
-        }
-    }
     pub fn add_component<T>(&mut self, comp: Components)
     where
         T: Script + 'static
     {
-        self.classes.append(&mut vec![Box::new(T::new())]);
-        self.components.append(&mut vec![comp]);
-        
-        //.start(Components::Component2D{position: [0.,0.]})
+        self.components.append(&mut vec![(Box::new(T::new()),comp)]);
     }
     pub fn add_resource(&mut self, res: i32){
         self.resources.append(&mut vec![res]);
+    }
+}
+
+pub struct Engine;
+
+impl Engine{
+    pub fn start(world: World){
+        for i in 0..world.components.len(){
+            world.components[i].0.start(&world.components[i].1, &world);   
+        }
+        
+        // c.start(self.components[0].class);
+        loop{
+            for c in &world.components{
+                c.0.resources(&world.resources)
+            }
+        }
     }
 }
