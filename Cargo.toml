@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 resources = "1.1.0"
-VoxInternal = {path = "crates/VoxInternal"}
+vox_internal = {path = "crates/vox_internal"}
 
 [workspace]
 exclude = ["thirdparty"]
@@ -17,9 +17,13 @@ members = [
 
 [features]
 default = [
-    "vox_ecs"
+    "vox_api",
+    "vox_ecs",
+    "vox_render"
 ]
-vox_ecs = ["VoxInternal/VoxECS"]
+vox_api = ["vox_internal/vox_api"]
+vox_ecs = ["vox_internal/vox_ecs"]
+vox_render = ["vox_internal/vox_render"]
 
 [[example]]
 name = "hello_world"

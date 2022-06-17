@@ -10,11 +10,8 @@ impl Script for Player{
     }
     fn start(&self, owner: &Components, world: &World) {
         println!("Position: {:?}", owner.get_component2D().position);  
-    }
-
-    
+    } 
 }
-
 
 // Run ECS
 fn main(){

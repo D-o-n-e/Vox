@@ -1,1 +1,1 @@
-pub use VoxInternal::*;
+pub use vox_internal::*;

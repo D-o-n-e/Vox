@@ -1,0 +1,2 @@
+C:/Users/Marcin/Documents/Vulkan/bin/glslc.exe crates/vox_render/shaders/shader.vert -o crates/vox_render/shaders/shader.vert.spv
+C:/Users/Marcin/Documents/Vulkan/bin/glslc.exe crates/vox_render/shaders/shader.frag -o crates/vox_render/shaders/shader.frag.spv
