@@ -3,7 +3,10 @@ use wgpu::*;
 use wgpu::util::DeviceExt;
 use winit::{window::Window, event::WindowEvent};
 use utils::*;
+use vox_ecs::*;
 use image::*;
+use cgmath::prelude::*;
+
 
 pub struct Render {
     pub surface: wgpu::Surface,
@@ -12,7 +15,9 @@ pub struct Render {
     pub config: wgpu::SurfaceConfiguration,
     pub size: winit::dpi::PhysicalSize<u32>,
     pub render_pipeline: wgpu::RenderPipeline,
-    pub vertex_buffer: wgpu::Buffer
+    pub vertex_buffer: wgpu::Buffer,
+    pub instances: (Vec<Components>, Vec<utils::Instance>),
+    pub instance_buffer: Buffer
 }
 
 impl Render {
@@ -87,7 +92,7 @@ impl Render {
             vertex: wgpu::VertexState {
                 module: &vs_module,
                 entry_point: "main",
-                buffers: &[Vertex::desc()],
+                buffers: &[Vertex::desc(), InstanceRaw::desc()],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &fs_module,
@@ -124,7 +129,15 @@ impl Render {
             // indicates how many array layers the attachments will have.
             multiview: None,
         });
-
+        let instances = (vec![], vec![]);
+        let instance_data = instances.1.iter().map(utils::Instance::to_raw).collect::<Vec<_>>();
+        let instance_buffer = device.create_buffer_init(
+            &wgpu::util::BufferInitDescriptor {
+                    label: Some("Instance Buffer"),
+                    contents: bytemuck::cast_slice(&instance_data),
+                    usage: wgpu::BufferUsages::VERTEX,
+                }
+        );
         Self {
             surface,
             device,
@@ -132,7 +145,9 @@ impl Render {
             size,
             config,
             render_pipeline,
-            vertex_buffer
+            vertex_buffer,
+            instances,
+            instance_buffer
         }
     }
 
@@ -149,10 +164,51 @@ impl Render {
     pub fn input(&mut self, event: &WindowEvent) -> bool {
         false
     }
+    pub fn add_instance(&mut self, instance: Components){
+        match instance{
+            Components::Component2D(data) => {
+                let rotation: cgmath::Quaternion<f32> = cgmath::Quaternion::from(cgmath::Euler {
+                    x: cgmath::Deg(0.0),
+                    y: cgmath::Deg(0.0),
+                    z: cgmath::Deg(data.rotation),
+                });
+                let new_ins = utils::Instance{position: cgmath::Vector3::new(data.position[0], data.position[1], 0.), rotation: rotation, use_image: false};
+                self.instances.0.append(&mut vec![instance]);
+                self.instances.1.append(&mut vec![new_ins]);
+            }
+            _ =>{}
+        }
+    }
+    pub fn update_instance(&mut self, instance: Components){
+        match instance {
+                Components::Component2D(data) => {
+                    let rotation: cgmath::Quaternion<f32> = cgmath::Quaternion::from(cgmath::Euler {
+                        x: cgmath::Deg(0.0),
+                        y: cgmath::Deg(0.0),
+                        z: cgmath::Deg(data.rotation),
+                    });
+                    let new_ins = utils::Instance{position: cgmath::Vector3::new(data.position[0], data.position[1], 0.), rotation: rotation, use_image: false};
+                    let index = self.instances.0.iter().position(|&r| r.get_component2D().id == instance.get_component2D().id).unwrap();
+
+                    self.instances.1[index] = new_ins;
+                }
+                _ => {}
+            }
+    }
 
     pub fn update(&mut self) {}
 
     pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+        let instance_data = self.instances.1.iter().map(utils::Instance::to_raw).collect::<Vec<_>>();
+        let instance_buffer = self.device.create_buffer_init(
+            &wgpu::util::BufferInitDescriptor {
+                label: Some("Instance Buffer"),
+                contents: bytemuck::cast_slice(&instance_data),
+                usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            }
+        );
+        self.instance_buffer.destroy();
+        self.instance_buffer = instance_buffer;
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture
@@ -182,10 +238,10 @@ impl Render {
                 }],
                 depth_stencil_attachment: None,
             });
-
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-            render_pass.draw(0..3, 0..1);
+            render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
+            render_pass.draw(0..3, 0..self.instances.1.len() as u32);
         }
 
         self.queue.submit(iter::once(encoder.finish()));

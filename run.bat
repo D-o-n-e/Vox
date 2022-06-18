@@ -1,1 +1,1 @@
-cargo run --example sprite
+.\compile_shaders && cargo run --example hello_world

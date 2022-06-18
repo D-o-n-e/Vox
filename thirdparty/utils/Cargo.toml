@@ -6,5 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cgmath = "0.18.0"
 bytemuck = { version = "1.4", features = [ "derive" ] }
 wgpu = "0.12.0"

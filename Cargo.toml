@@ -33,6 +33,10 @@ path = "examples/hello_world.rs"
 name = "sprite"
 path = "examples/sprite.rs"
 
+[[example]]
+name = "moving_triangle"
+path = "examples/moving_triangle.rs"
+
 
 
 

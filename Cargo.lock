@@ -1474,6 +1474,7 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
+ "cgmath",
  "wgpu",
 ]
 
@@ -1502,6 +1503,7 @@ name = "vox_ecs"
 version = "0.1.0"
 dependencies = [
  "image",
+ "winit",
 ]
 
 [[package]]
@@ -1521,6 +1523,7 @@ dependencies = [
  "cgmath",
  "image",
  "utils",
+ "vox_ecs",
  "wgpu",
  "winit",
 ]

@@ -8,16 +8,15 @@ impl Script for Player{
     fn new() -> Self {
         Player
     }
-    fn start(&self, owner: &Components, world: &World) {
-        println!("Position: {:?}", owner.get_component2D().position);  
-    } 
+    fn start(&self, owner: &mut Components) {
+        println!("Hello, World");
+    }
 }
 
-// Run ECS
+// Run
 fn main(){
     let mut world = World::new();
-    let mut component = Component2D::new();
-    component.position = [10.,0.];
+    let component = Component2D::new(0);
     world.add_component::<Player>(Components::Component2D(component));
     Engine::start(world);
 }

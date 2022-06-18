@@ -3,20 +3,23 @@
 layout(location = 0) out vec3 fragColor;
 layout(location = 0) in vec3 v_position;
 layout(location = 1) in vec3 v_color;
+layout(location = 5) in vec4 model_matrix_0;
+layout(location = 6) in vec4 model_matrix_1;
+layout(location = 7) in vec4 model_matrix_2;
+layout(location = 8) in vec4 model_matrix_3;
+layout(location = 9) in int use_image;
 
-// const vec2 positions[3] = vec2[3](
-//     vec2(0.0, 0.5),
-//     vec2(-0.5, -0.5),
-//     vec2(0.5, -0.5)
-// );
+mat4 model_matrix = mat4(
+    model_matrix_0,
+    model_matrix_1,
+    model_matrix_2,
+    model_matrix_3
+);
 
-// vec3 colors[3] = vec3[](
-//     vec3(1.0, 0.0, 0.0),
-//     vec3(0.0, 1.0, 0.0),
-//     vec3(0.0, 0.0, 1.0)
-// );
 
 void main() {
-    gl_Position = vec4(v_position, 1.0);
-    fragColor = v_color;
+    if (use_image == 0){
+        gl_Position = model_matrix * vec4(v_position, 1.0);
+        fragColor = v_color;
+    }
 }
